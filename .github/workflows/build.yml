@@ -8,10 +8,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # ЭТА ДОБАВКА ОТКЛЮЧАЕТ ПРЕДУПРЕЖДЕНИЕ GITHUB О NODE.JS
     env:
-      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
-      
+      # УБИРАЕМ ПРЕДУПРЕЖДЕНИЕ ПРО NODE.JS 20
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      # И на всякий случай указываем пути к Android SDK
+      ANDROID_HOME: /usr/local/lib/android/sdk
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,8 +32,24 @@ jobs:
       - name: Build APK
         run: flet build apk --yes
 
+      - name: 🔍 DIAGNOSTICS: Show all files
+        # ЭТОТ ШАГ ПОКАЖЕТ НАМ ВСЕ ФАЙЛЫ, КОТОРЫЕ СОЗДАЛ FLET
+        run: |
+          echo "=== ВСЕ ФАЙЛЫ В ПАПКЕ BUILD ==="
+          find build -type f || echo "Папка build пуста!"
+          echo ""
+          echo "=== ПОИСК ВСЕХ APK ФАЙЛОВ ВЕЗДЕ ==="
+          find . -name "*.apk" || echo "APK не найдены нигде!"
+          echo ""
+          echo "=== СОДЕРЖИМОЕ КОРНЕВОЙ ПАПКИ ==="
+          ls -la
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerApp-Release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          # Ищем любой .apk файл в любой подпапке
+          path: |
+            build/**/*.apk
+            **/*.apk
+          if-no-files-found: warn
