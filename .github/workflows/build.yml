@@ -23,11 +23,17 @@ jobs:
           pip install "flet[build]"
 
       - name: Build APK
-        # ДОБАВЛЕНО --yes ДЛЯ АВТОМАТИЧЕСКОГО ПОДТВЕРЖДЕНИЯ УСТАНОВКИ FLUTTER
-        run: flet build apk --yes 
+        run: flet build apk --yes
 
+      # ДОБАВЛЕНО: Этот шаг найдет и покажет нам, где именно лежит APK файл
+      - name: Debug: Find APK
+        run: |
+          echo "Ищем APK файлы..."
+          find build -name "*.apk"
+          
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerApp-Release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          # ИСПРАВЛЕНО: Используем маску **, чтобы найти APK в любой подпапке
+          path: build/**/*.apk 
