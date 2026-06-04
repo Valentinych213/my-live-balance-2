@@ -8,6 +8,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # ЭТА ДОБАВКА ОТКЛЮЧАЕТ ПРЕДУПРЕЖДЕНИЕ GITHUB О NODE.JS
+    env:
+      ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+      
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,13 +29,8 @@ jobs:
       - name: Build APK
         run: flet build apk --yes
 
-      - name: Debug: Find APK
-        run: |
-          echo "Ищем APK файлы в папке build..."
-          find build -type f -name "*.apk" || echo "APK не найден"
-
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerApp-Release
-          path: "build/**/*.apk"
+          path: build/app/outputs/flutter-apk/app-release.apk
