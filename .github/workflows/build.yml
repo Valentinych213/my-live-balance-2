@@ -1,4 +1,4 @@
-name: Build Flet APK
+name: Build Flet APK (Fixed)
 
 on:
   push:
@@ -9,9 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      # УБИРАЕМ ПРЕДУПРЕЖДЕНИЕ ПРО NODE.JS 20
+      # 1. РЕШЕНИЕ ПРОБЛЕМЫ С NODE.JS 24
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      # И на всякий случай указываем пути к Android SDK
+      # Указываем пути к Android SDK, чтобы Flutter не терялся
       ANDROID_HOME: /usr/local/lib/android/sdk
       ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
 
@@ -32,24 +32,23 @@ jobs:
       - name: Build APK
         run: flet build apk --yes
 
-      - name: DIAGNOSTICS: Show all files
-        # ЭТОТ ШАГ ПОКАЖЕТ НАМ ВСЕ ФАЙЛЫ, КОТОРЫЕ СОЗДАЛ FLET
+      - name: 🔍 Find APK file
+        # 2. РЕШЕНИЕ ПРОБЛЕМЫ С НЕВЕРНЫМ ПУТЕМ
+        # Эта команда ищет любой .apk файл в папке build и выводит его путь в логи
+        id: find_apk
         run: |
-          echo "=== ВСЕ ФАЙЛЫ В ПАПКЕ BUILD ==="
-          find build -type f || echo "Папка build пуста!"
-          echo ""
-          echo "=== ПОИСК ВСЕХ APK ФАЙЛОВ ВЕЗДЕ ==="
-          find . -name "*.apk" || echo "APK не найдены нигде!"
-          echo ""
-          echo "=== СОДЕРЖИМОЕ КОРНЕВОЙ ПАПКИ ==="
-          ls -la
+          echo "Ищем скомпилированный APK..."
+          APK_PATH=$(find build -name "*.apk" -print -quit)
+          if [ -z "$APK_PATH" ]; then
+            echo "Ошибка: APK файл не найден!"
+            exit 1
+          fi
+          echo "Найден файл: $APK_PATH"
+          echo "apk_path=$APK_PATH" >> $GITHUB_OUTPUT
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerApp-Release
-          # Ищем любой .apk файл в любой подпапке
-          path: |
-            build/**/*.apk
-            **/*.apk
-          if-no-files-found: warn
+          # Используем найденный путь вместо жестко заданного
+          path: ${{ steps.find_apk.outputs.apk_path }}
