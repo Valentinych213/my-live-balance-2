@@ -32,7 +32,7 @@ jobs:
       - name: Build APK
         run: flet build apk --yes
 
-      - name: 🔍 DIAGNOSTICS: Show all files
+      - name: DIAGNOSTICS: Show all files
         # ЭТОТ ШАГ ПОКАЖЕТ НАМ ВСЕ ФАЙЛЫ, КОТОРЫЕ СОЗДАЛ FLET
         run: |
           echo "=== ВСЕ ФАЙЛЫ В ПАПКЕ BUILD ==="
