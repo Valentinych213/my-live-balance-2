@@ -25,15 +25,13 @@ jobs:
       - name: Build APK
         run: flet build apk --yes
 
-      # ДОБАВЛЕНО: Этот шаг найдет и покажет нам, где именно лежит APK файл
       - name: Debug: Find APK
         run: |
-          echo "Ищем APK файлы..."
-          find build -name "*.apk"
-          
+          echo "Ищем APK файлы в папке build..."
+          find build -type f -name "*.apk" || echo "APK не найден"
+
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: TrackerApp-Release
-          # ИСПРАВЛЕНО: Используем маску **, чтобы найти APK в любой подпапке
-          path: build/**/*.apk 
+          path: "build/**/*.apk"
